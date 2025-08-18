@@ -1,13 +1,11 @@
-# app.py
-# ---------------------------------------------
-# "괴담에서 살아남기" — 어둡고 눈 편한 버튼 적용
-# ---------------------------------------------
-
 import random
 from typing import Dict, List
 import streamlit as st
 
-# --------------- 기본 세팅 ---------------
+# ---------------------------------------------
+# "괴담에서 살아남기" — 8장 전체, 어둡고 편한 UI
+# ---------------------------------------------
+
 st.set_page_config(
     page_title="괴담에서 살아남기",
     page_icon="🕯️",
@@ -15,7 +13,6 @@ st.set_page_config(
     initial_sidebar_state="collapsed",
 )
 
-# 다크 무드 + 어둡고 편한 버튼 CSS
 DARK_CSS = """
 <style>
 :root {
@@ -24,8 +21,8 @@ DARK_CSS = """
   --text: #e6e6e6;
   --muted: #a3a3a3;
   --accent: #ff334e;
-  --btn-bg: #1b1c22; /* 버튼 배경 어둡게 */
-  --btn-hover: #2a2b32; /* 버튼 호버 시 */
+  --btn-bg: #1b1c22;
+  --btn-hover: #2a2b32;
   --btn-text: #e6e6e6;
 }
 html, body, [data-testid="stAppViewContainer"] {
@@ -33,7 +30,6 @@ html, body, [data-testid="stAppViewContainer"] {
   color: var(--text);
 }
 section.main > div { max-width: 760px; }
-
 h1, h2, h3 { color: var(--text); }
 .small { color: var(--muted); font-size: 0.9rem; }
 .card {
@@ -42,28 +38,27 @@ h1, h2, h3 { color: var(--text); }
   border-radius: 16px;
   padding: 18px 16px;
 }
-.btn {
-  border-radius: 999px;
-  padding: 10px 16px;
-  font-weight: 700;
-  background-color: var(--btn-bg);
-  color: var(--btn-text);
-  border: 1px solid rgba(255,255,255,0.1);
-  transition: background-color 0.2s ease;
+.radio-container { margin: 8px 0; }
+button.stButton>button {
+    border-radius: 999px;
+    padding: 10px 16px;
+    font-weight: 700;
+    background-color: var(--btn-bg);
+    color: var(--btn-text);
+    border: 1px solid rgba(255,255,255,0.1);
 }
-.btn:hover {
-  background-color: var(--btn-hover);
+button.stButton>button:hover {
+    background-color: var(--btn-hover);
 }
 .hr { height: 1px; background: rgba(255,255,255,0.08); margin: 8px 0 16px; }
 .rule { font-size: 0.95rem; line-height: 1.6; }
-.option { padding: 10px 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); }
 .note { font-size: 0.9rem; color: var(--muted); }
 .tag { display: inline-block; border: 1px solid rgba(255,255,255,0.16); border-radius: 999px; padding: 2px 10px; font-size: 0.85rem; color: var(--muted); margin-right: 6px; }
 </style>
 """
 st.markdown(DARK_CSS, unsafe_allow_html=True)
 
-# --------------- 세션 상태 초기화 ---------------
+# 세션 상태 초기화
 if "step" not in st.session_state:
     st.session_state.step = 0
 if "scores" not in st.session_state:
@@ -73,7 +68,7 @@ if "answers" not in st.session_state:
 if "username" not in st.session_state:
     st.session_state.username = ""
 
-# --------------- 유형 정의 ---------------
+# MBTI 유형
 TYPEBOOK: Dict[str, Dict[str, str | int]] = {
     "ESTJ": {"name": "현실주의 지휘관", "desc": "상황을 빠르게 정리하고 지휘하려 한다." , "surv": 55},
     "ESTP": {"name": "위험한 행동파", "desc": "맞서 싸우는 걸 즐기지만, 계산 실수에 약하다.", "surv": 25},
@@ -93,24 +88,44 @@ TYPEBOOK: Dict[str, Dict[str, str | int]] = {
     "INFP": {"name": "꿈꾸는 생존자", "desc": "상상을 따르지만 기묘하게 운이 따른다.", "surv": 60},
 }
 
-# --------------- 스토리 상황 정의 ---------------
+# 8장 장면 샘플
 SCENES = [
-    # ... (장면 1~8 그대로 사용) ...
+    {"title": "버려진 집 입구",
+     "text": "어둡고 으스스한 집 앞에 서 있다. 들어갈까 말까?",
+     "options":[{"label":"들어간다","effects":{"E":1,"S":1}},{"label":"돌아간다","effects":{"I":1,"N":1}}]},
+    {"title": "복도에서 이상한 소리",
+     "text": "복도에서 끼익거리는 소리가 난다. 어떻게 할까?",
+     "options":[{"label":"직진한다","effects":{"E":1,"T":1}},{"label":"숨는다","effects":{"I":1,"F":1}}]},
+    {"title": "계단 아래 그림자",
+     "text": "계단 아래에서 누군가 움직이는 듯하다. 당신의 선택은?",
+     "options":[{"label":"조심히 내려간다","effects":{"S":1,"T":1}},{"label":"올라간다","effects":{"N":1,"F":1}}]},
+    {"title": "기묘한 방",
+     "text": "방 안에 오래된 일기장이 있다. 읽어볼까?",
+     "options":[{"label":"읽는다","effects":{"N":1,"I":1}},{"label":"무시한다","effects":{"S":1,"E":1}}]},
+    {"title": "벽 뒤의 소리",
+     "text": "벽 뒤에서 누군가 속삭인다. 어떻게 반응할까?",
+     "options":[{"label":"응답한다","effects":{"E":1,"F":1}},{"label":"무시하고 지나간다","effects":{"I":1,"T":1}}]},
+    {"title": "낡은 창고",
+     "text": "창고 안에 반쯤 부서진 상자가 있다. 열어볼까?",
+     "options":[{"label":"연다","effects":{"P":1,"N":1}},{"label":"닫는다","effects":{"J":1,"S":1}}]},
+    {"title": "마지막 방",
+     "text": "마지막 방에서 빛나는 문을 발견했다. 들어갈까?",
+     "options":[{"label":"들어간다","effects":{"E":1,"P":1}},{"label":"돌아간다","effects":{"I":1,"J":1}}]},
+    {"title": "탈출구",
+     "text": "건물 밖으로 나갈 수 있는 길을 발견했다. 어떻게 할까?",
+     "options":[{"label":"달려 나간다","effects":{"S":1,"E":1}},{"label":"조용히 나간다","effects":{"N":1,"I":1}}]},
 ]
 
-# --------------- 함수 정의 ---------------
+# MBTI 계산
 def calc_type(scores: Dict[str, int]) -> str:
-    """점수에서 MBTI 유형 결정"""
     mbti = ""
-    mbti += "E" if scores.get("E", 0) >= scores.get("I", 0) else "I"
-    mbti += "S" if scores.get("S", 0) >= scores.get("N", 0) else "N"
-    mbti += "T" if scores.get("T", 0) >= scores.get("F", 0) else "F"
-    mbti += "J" if scores.get("J", 0) >= scores.get("P", 0) else "P"
+    mbti += "E" if scores.get("E",0) >= scores.get("I",0) else "I"
+    mbti += "S" if scores.get("S",0) >= scores.get("N",0) else "N"
+    mbti += "T" if scores.get("T",0) >= scores.get("F",0) else "F"
+    mbti += "J" if scores.get("J",0) >= scores.get("P",0) else "P"
     return mbti
 
-# --------------- UI ---------------
-
-# 사용자 이름 입력
+# 이름 입력
 if st.session_state.username == "":
     st.title("🕯️ 괴담에서 살아남기")
     st.text_input("당신의 이름을 입력하세요", key="username")
@@ -119,31 +134,31 @@ if st.session_state.username == "":
 # 진행 단계
 step = st.session_state.step
 
-# 마지막 단계 전
+# 장면 진행
 if step < len(SCENES):
     scene = SCENES[step]
     st.header(f"장면 {step+1}: {scene['title']}")
     st.write(scene['text'])
     st.markdown("<div class='hr'></div>", unsafe_allow_html=True)
 
-    # 선택지 버튼 (어둡게)
-    for idx, opt in enumerate(scene['options']):
-        if st.button(opt['label'], key=f"{step}_{idx}", help="선택하면 MBTI 점수가 반영됩니다"):
-            # 점수 반영
-            for k, v in opt['effects'].items():
-                st.session_state.scores[k] += v
-            st.session_state.answers.append(idx)
-            st.session_state.step += 1
-            st.experimental_rerun()
+    # 선택지 radio
+    choice = st.radio("선택지를 골라주세요", [opt["label"] for opt in scene["options"]], key=f"radio_{step}")
+    if st.button("✔ 선택 완료"):
+        idx = [opt["label"] for opt in scene["options"]].index(choice)
+        for k,v in scene["options"][idx]["effects"].items():
+            st.session_state.scores[k] += v
+        st.session_state.answers.append(idx)
+        st.session_state.step += 1
+        st.experimental_rerun()
 
-# 마지막 단계 도달
+# 결과 화면
 else:
     mbti = calc_type(st.session_state.scores)
     result = TYPEBOOK.get(mbti, {})
     st.title(f"🎉 {st.session_state.username}님의 생존 결과")
-    st.subheader(f"{result.get('name', '')} ({mbti})")
-    st.write(result.get("desc", ""))
-    st.markdown(f"**생존 확률:** {result.get('surv', '?')}%")
+    st.subheader(f"{result.get('name','')} ({mbti})")
+    st.write(result.get("desc",""))
+    st.markdown(f"**생존 확률:** {result.get('surv','?')}%")
 
     st.markdown("<div class='hr'></div>", unsafe_allow_html=True)
     st.subheader("📜 당신의 선택 기록")
@@ -151,7 +166,6 @@ else:
         opt_text = SCENES[i]['options'][ans_idx]['label']
         st.write(f"장면 {i+1}: {opt_text}")
 
-    # 초기화 버튼
     if st.button("🔄 다시 시작"):
         st.session_state.step = 0
         st.session_state.scores = {k: 0 for k in list("EISNTFJP")}
