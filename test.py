@@ -1,23 +1,18 @@
-# survival_quiz_app_white_options.py
+# survival_quiz_app_white_options_fixed.py
 # ============================================
-# "재난에서 살아남기" 스트림릿 앱 (흰색 선택지 버튼 + 통합)
+# "재난에서 살아남기" 스트림릿 앱 (흰색 선택지 버튼 + 한 번 클릭으로 진행)
 
 import streamlit as st
 
 # ----------------- 페이지 세팅 -----------------
 st.set_page_config(page_title="재난에서 살아남기", page_icon="🌍", layout="centered")
 
-# ----------------- CSS 통합 (딥그린 + 흰색 선택지 버튼 + 결과 박스) -----------------
+# ----------------- CSS 통합 -----------------
 st.markdown(
     """
     <style>
-    /* 전체 배경 */
     .stApp { background-color: #1b4332; color: #ffffff; }
-
-    /* 제목 색상 */
     h1, h2, h3, h4 { color: #d8f3dc; }
-
-    /* 버튼 스타일 */
     div.stButton > button, button[kind="primary"] {
         background-color: #2d6a4f !important;
         color: #ffffff !important;
@@ -31,8 +26,6 @@ st.markdown(
         background-color: #40916c !important;
         border: 1px solid #b7e4c7 !important;
     }
-
-    /* 결과 카드 */
     .result-box {
         background-color: #2d6a4f;
         padding: 20px;
@@ -40,8 +33,6 @@ st.markdown(
         margin-top: 16px;
         box-shadow: 0 0 10px rgba(0,0,0,0.35);
     }
-
-    /* 구분선 색 */
     hr { border: none; height: 1px; background: #95d5b2; opacity: 0.4; }
     </style>
     """,
@@ -56,6 +47,7 @@ def ensure_state():
         for k in map(str, range(1,9)): st.session_state.scores.setdefault(k,0)
     if "answers" not in st.session_state: st.session_state.answers = {}
     if "show_all_types" not in st.session_state: st.session_state.show_all_types = False
+    if "clicked_option" not in st.session_state: st.session_state.clicked_option = None
 ensure_state()
 
 # ----------------- 질문 데이터 -----------------
@@ -134,17 +126,21 @@ st.progress(progress)
 if st.session_state.step < len(questions):
     q = questions[st.session_state.step]
     st.subheader(f"상황 {st.session_state.step+1}) {q['situation']}")
-    
-    # ----------------- HTML 버튼 선택지 -----------------
-    choice = None
+
+    # ----------------- HTML 버튼 선택지 (클릭 플래그) -----------------
     for k,v in q["options"].items():
         btn_id = f"btn_{st.session_state.step}_{k}"
         if st.button(v, key=btn_id):
-            choice = v
-            st.session_state.scores[k] += 1
-            st.session_state.answers[q["situation"]] = (choice, q["tip"])
-            st.session_state.step += 1
-            st.experimental_rerun()
+            st.session_state.clicked_option = (k,v)
+
+    # 클릭 후 처리
+    if st.session_state.clicked_option:
+        k,v = st.session_state.clicked_option
+        st.session_state.scores[k] += 1
+        st.session_state.answers[q["situation"]] = (v, q["tip"])
+        st.session_state.step += 1
+        st.session_state.clicked_option = None
+        st.experimental_rerun()
 
     # 처음으로 버튼
     if st.button("처음으로 ⏮️"):
@@ -152,6 +148,7 @@ if st.session_state.step < len(questions):
         st.session_state.scores = {str(k):0 for k in range(1,9)}
         st.session_state.answers = {}
         st.session_state.show_all_types = False
+        st.session_state.clicked_option = None
         st.experimental_rerun()
 
 else:
@@ -187,6 +184,7 @@ else:
             st.session_state.scores = {str(k):0 for k in range(1,9)}
             st.session_state.answers = {}
             st.session_state.show_all_types = False
+            st.session_state.clicked_option = None
             st.experimental_rerun()
     with col2:
         if st.button("📖 다른 유형 보기"):
