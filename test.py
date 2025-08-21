@@ -1,7 +1,4 @@
-# survival_quiz_step.py
-# --------------------------------------------
-# "재난에서 살아남기" - 스트림릿 앱 (단계별 진행 버전)
-
+# survival_quiz_step.py (업데이트 버전)
 import streamlit as st
 
 st.set_page_config(page_title="재난에서 살아남기", page_icon="🌍", layout="centered")
@@ -17,6 +14,8 @@ if "scores" not in st.session_state:
     st.session_state.scores = {"E":0, "I":0, "S":0, "N":0, "T":0, "F":0, "J":0, "P":0}
 if "answers" not in st.session_state:
     st.session_state.answers = {}
+if "show_all_types" not in st.session_state:
+    st.session_state.show_all_types = False
 
 # 질문 데이터
 questions = [
@@ -88,6 +87,26 @@ questions = [
     },
 ]
 
+# 생존자 유형 이름 (MBTI 단어는 안 씀)
+survivor_types = {
+    "ISTJ": "신중한 분석가형 생존자",
+    "ISFJ": "헌신적인 수호자형 생존자",
+    "INFJ": "통찰력 있는 조언자형 생존자",
+    "INTJ": "전략적인 설계자형 생존자",
+    "ISTP": "실용적인 해결사형 생존자",
+    "ISFP": "온화한 적응가형 생존자",
+    "INFP": "이상적인 탐색자형 생존자",
+    "INTP": "호기심 많은 사색가형 생존자",
+    "ESTP": "대담한 행동가형 생존자",
+    "ESFP": "활기찬 즉흥가형 생존자",
+    "ENFP": "열정적인 탐험가형 생존자",
+    "ENTP": "도전적인 전략가형 생존자",
+    "ESTJ": "체계적인 지휘관형 생존자",
+    "ESFJ": "사교적인 보호자형 생존자",
+    "ENFJ": "따뜻한 지도자형 생존자",
+    "ENTJ": "결단력 있는 통솔자형 생존자",
+}
+
 # 현재 질문
 if st.session_state.step < len(questions):
     q = questions[st.session_state.step]
@@ -102,6 +121,7 @@ if st.session_state.step < len(questions):
                     st.session_state.answers[q['situation']] = (choice, q["tip"])
             st.session_state.step += 1
             st.rerun()
+
 else:
     # MBTI 코드 계산
     scores = st.session_state.scores
@@ -110,26 +130,6 @@ else:
     mbti += "S" if scores["S"] >= scores["N"] else "N"
     mbti += "T" if scores["T"] >= scores["F"] else "F"
     mbti += "J" if scores["J"] >= scores["P"] else "P"
-
-    # 생존자 유형 이름 (MBTI 단어는 안 씀)
-    survivor_types = {
-        "ISTJ": "신중한 분석가형 생존자",
-        "ISFJ": "헌신적인 수호자형 생존자",
-        "INFJ": "통찰력 있는 조언자형 생존자",
-        "INTJ": "전략적인 설계자형 생존자",
-        "ISTP": "실용적인 해결사형 생존자",
-        "ISFP": "온화한 적응가형 생존자",
-        "INFP": "이상적인 탐색자형 생존자",
-        "INTP": "호기심 많은 사색가형 생존자",
-        "ESTP": "대담한 행동가형 생존자",
-        "ESFP": "활기찬 즉흥가형 생존자",
-        "ENFP": "열정적인 탐험가형 생존자",
-        "ENTP": "도전적인 전략가형 생존자",
-        "ESTJ": "체계적인 지휘관형 생존자",
-        "ESFJ": "사교적인 보호자형 생존자",
-        "ENFJ": "따뜻한 지도자형 생존자",
-        "ENTJ": "결단력 있는 통솔자형 생존자",
-    }
 
     st.header(f"당신의 생존 성향: {survivor_types[mbti]}")
 
@@ -143,8 +143,21 @@ else:
 
     st.success("생존 지식은 언제나 실제 상황에 큰 도움이 됩니다. 기억해 두세요!")
 
-    if st.button("🔄 다시 시작하기"):
-        st.session_state.step = 0
-        st.session_state.scores = {"E":0,"I":0,"S":0,"N":0,"T":0,"F":0,"J":0,"P":0}
-        st.session_state.answers = {}
-        st.rerun()
+    # 버튼 2개 나란히 배치
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button("🔄 다시 시작하기"):
+            st.session_state.step = 0
+            st.session_state.scores = {"E":0,"I":0,"S":0,"N":0,"T":0,"F":0,"J":0,"P":0}
+            st.session_state.answers = {}
+            st.session_state.show_all_types = False
+            st.rerun()
+    with col2:
+        if st.button("📖 다른 유형 보기"):
+            st.session_state.show_all_types = not st.session_state.show_all_types
+
+    # 전체 유형 보기 토글
+    if st.session_state.show_all_types:
+        st.write("### 🔍 다른 생존자 유형들")
+        for code, name in survivor_types.items():
+            st.markdown(f"- **{name}**  ({code})")
