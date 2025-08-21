@@ -1,13 +1,13 @@
-# survival_quiz_app.py
+# survival_quiz_app_white_options.py
 # ============================================
-# "재난에서 살아남기" 스트림릿 앱 (완전 통합 + 흰색 선택지)
+# "재난에서 살아남기" 스트림릿 앱 (흰색 선택지 버튼 + 통합)
 
 import streamlit as st
 
 # ----------------- 페이지 세팅 -----------------
 st.set_page_config(page_title="재난에서 살아남기", page_icon="🌍", layout="centered")
 
-# ----------------- CSS 통합 (딥그린 + 흰색 선택지 + 버튼 + 결과 박스) -----------------
+# ----------------- CSS 통합 (딥그린 + 흰색 선택지 버튼 + 결과 박스) -----------------
 st.markdown(
     """
     <style>
@@ -23,24 +23,13 @@ st.markdown(
         color: #ffffff !important;
         border-radius: 12px !important;
         border: 1px solid #95d5b2 !important;
+        padding: 10px 20px !important;
+        margin: 5px 0 !important;
+        text-align: left !important;
     }
     div.stButton > button:hover, button[kind="primary"]:hover {
         background-color: #40916c !important;
         border: 1px solid #b7e4c7 !important;
-    }
-
-    /* 라디오/체크 선택지 글씨 흰색 + 호버 대비 */
-    div.stRadio div[data-baseweb="radio"] label,
-    div.stRadio label,
-    div.stCheckbox div[data-baseweb="checkbox"] label,
-    div.stCheckbox label {
-        color: #ffffff !important;
-        background-color: rgba(0,0,0,0.0) !important;
-    }
-    div.stRadio div[data-baseweb="radio"] label:hover,
-    div.stCheckbox div[data-baseweb="checkbox"] label:hover {
-        color: #ffffff !important;
-        background-color: rgba(255,255,255,0.05) !important;
     }
 
     /* 결과 카드 */
@@ -145,26 +134,25 @@ st.progress(progress)
 if st.session_state.step < len(questions):
     q = questions[st.session_state.step]
     st.subheader(f"상황 {st.session_state.step+1}) {q['situation']}")
-    choice = st.radio(q["question"], list(q["options"].values()), key=f"q{st.session_state.step}")
+    
+    # ----------------- HTML 버튼 선택지 -----------------
+    choice = None
+    for k,v in q["options"].items():
+        btn_id = f"btn_{st.session_state.step}_{k}"
+        if st.button(v, key=btn_id):
+            choice = v
+            st.session_state.scores[k] += 1
+            st.session_state.answers[q["situation"]] = (choice, q["tip"])
+            st.session_state.step += 1
+            st.experimental_rerun()
 
-    colA, colB = st.columns([1,1])
-    with colA:
-        if st.button("다음 ➡️"):
-            if choice:
-                for k,v in q["options"].items():
-                    if v == choice:
-                        st.session_state.scores[k] += 1
-                        st.session_state.answers[q["situation"]] = (choice, q["tip"])
-                        break
-                st.session_state.step += 1
-                st.rerun()
-    with colB:
-        if st.button("처음으로 ⏮️"):
-            st.session_state.step = 0
-            st.session_state.scores = {str(k):0 for k in range(1,9)}
-            st.session_state.answers = {}
-            st.session_state.show_all_types = False
-            st.rerun()
+    # 처음으로 버튼
+    if st.button("처음으로 ⏮️"):
+        st.session_state.step = 0
+        st.session_state.scores = {str(k):0 for k in range(1,9)}
+        st.session_state.answers = {}
+        st.session_state.show_all_types = False
+        st.experimental_rerun()
 
 else:
     # ----------------- 결과 계산 -----------------
@@ -199,7 +187,7 @@ else:
             st.session_state.scores = {str(k):0 for k in range(1,9)}
             st.session_state.answers = {}
             st.session_state.show_all_types = False
-            st.rerun()
+            st.experimental_rerun()
     with col2:
         if st.button("📖 다른 유형 보기"):
             st.session_state.show_all_types = not st.session_state.show_all_types
