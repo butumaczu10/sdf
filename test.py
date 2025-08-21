@@ -1,22 +1,24 @@
-# survival_quiz.py
+# survival_quiz_step.py
 # --------------------------------------------
-# "재난에서 살아남기" - 스트림릿 앱
-# 6가지 상황에 대한 선택 → 생존자 유형 결과 + 대처 팁
-# MBTI 로직 기반이지만 MBTI라는 단어는 전혀 노출 안 함
+# "재난에서 살아남기" - 스트림릿 앱 (단계별 진행 버전)
 
 import streamlit as st
 
 st.set_page_config(page_title="재난에서 살아남기", page_icon="🌍", layout="centered")
 
 st.title("🌍 재난 상황에서 나는 어떤 생존자일까?")
-
-st.markdown("6가지 재난 상황에서 선택지를 고르고, 당신의 생존 성향을 확인해 보세요!")
+st.markdown("상황별 질문에 답하고, 마지막에 당신의 생존 성향을 확인하세요!")
 st.markdown("---")
 
-# MBTI 점수 누적용
-scores = {"E":0, "I":0, "S":0, "N":0, "T":0, "F":0, "J":0, "P":0}
+# 초기화
+if "step" not in st.session_state:
+    st.session_state.step = 0
+if "scores" not in st.session_state:
+    st.session_state.scores = {"E":0, "I":0, "S":0, "N":0, "T":0, "F":0, "J":0, "P":0}
+if "answers" not in st.session_state:
+    st.session_state.answers = {}
 
-# 질문/선택지 데이터
+# 질문 데이터
 questions = [
     {
         "situation": "🔥 화재 발생",
@@ -86,24 +88,23 @@ questions = [
     },
 ]
 
-answers = {}
+# 현재 질문
+if st.session_state.step < len(questions):
+    q = questions[st.session_state.step]
+    st.subheader(f"상황 {st.session_state.step+1}) {q['situation']}")
+    choice = st.radio(q["question"], list(q["options"].values()), key=f"q{st.session_state.step}")
 
-# 질문 표시
-for i, q in enumerate(questions):
-    st.subheader(f"상황 {i+1}) {q['situation']}")
-    choice = st.radio(q["question"], list(q["options"].values()), key=f"q{i}")
-    if choice:
-        # 선택에 해당하는 MBTI 알파벳을 찾아서 점수 +1
-        for k, v in q["options"].items():
-            if v == choice:
-                scores[k] += 1
-                answers[q['situation']] = (choice, q["tip"])
-
-st.markdown("---")
-
-# 결과 버튼
-if st.button("내 생존자 유형 보기 🧭"):
+    if st.button("다음 ➡️"):
+        if choice:
+            for k, v in q["options"].items():
+                if v == choice:
+                    st.session_state.scores[k] += 1
+                    st.session_state.answers[q['situation']] = (choice, q["tip"])
+            st.session_state.step += 1
+            st.rerun()
+else:
     # MBTI 코드 계산
+    scores = st.session_state.scores
     mbti = ""
     mbti += "E" if scores["E"] >= scores["I"] else "I"
     mbti += "S" if scores["S"] >= scores["N"] else "N"
@@ -137,7 +138,13 @@ if st.button("내 생존자 유형 보기 🧭"):
     st.markdown("- 이 유형은 위기 속에서 고유한 방식으로 생존 전략을 세웁니다.")
 
     st.write("### 📘 상황별 대처 팁")
-    for sit, (ans, tip) in answers.items():
+    for sit, (ans, tip) in st.session_state.answers.items():
         st.markdown(f"**{sit}**  \n선택: {ans}  \n✅ 올바른 팁: {tip}")
 
     st.success("생존 지식은 언제나 실제 상황에 큰 도움이 됩니다. 기억해 두세요!")
+
+    if st.button("🔄 다시 시작하기"):
+        st.session_state.step = 0
+        st.session_state.scores = {"E":0,"I":0,"S":0,"N":0,"T":0,"F":0,"J":0,"P":0}
+        st.session_state.answers = {}
+        st.rerun()
