@@ -1,6 +1,7 @@
-# survival_quiz_app_white_options_fixed.py
+# survival_quiz_app_stable.py
 # ============================================
-# "재난에서 살아남기" 스트림릿 앱 (흰색 선택지 버튼 + 한 번 클릭으로 진행)
+# "재난에서 살아남기" 스트림릿 앱
+# ✅ 선택지 흰색, 버튼 1회 클릭 즉시 진행, rerun 오류 제거
 
 import streamlit as st
 
@@ -127,29 +128,26 @@ if st.session_state.step < len(questions):
     q = questions[st.session_state.step]
     st.subheader(f"상황 {st.session_state.step+1}) {q['situation']}")
 
-    # ----------------- HTML 버튼 선택지 (클릭 플래그) -----------------
+    # ----------------- 버튼 선택지 -----------------
     for k,v in q["options"].items():
         btn_id = f"btn_{st.session_state.step}_{k}"
         if st.button(v, key=btn_id):
             st.session_state.clicked_option = (k,v)
 
-    # 클릭 후 처리
+    # 클릭 후 상태 업데이트만, rerun 없이 처리
     if st.session_state.clicked_option:
         k,v = st.session_state.clicked_option
         st.session_state.scores[k] += 1
         st.session_state.answers[q["situation"]] = (v, q["tip"])
         st.session_state.step += 1
         st.session_state.clicked_option = None
-        st.experimental_rerun()
 
-    # 처음으로 버튼
     if st.button("처음으로 ⏮️"):
         st.session_state.step = 0
         st.session_state.scores = {str(k):0 for k in range(1,9)}
         st.session_state.answers = {}
         st.session_state.show_all_types = False
         st.session_state.clicked_option = None
-        st.experimental_rerun()
 
 else:
     # ----------------- 결과 계산 -----------------
@@ -185,7 +183,6 @@ else:
             st.session_state.answers = {}
             st.session_state.show_all_types = False
             st.session_state.clicked_option = None
-            st.experimental_rerun()
     with col2:
         if st.button("📖 다른 유형 보기"):
             st.session_state.show_all_types = not st.session_state.show_all_types
