@@ -1,19 +1,22 @@
 # survival_quiz_app.py
 # ============================================
-# "재난에서 살아남기" 스트림릿 앱 (완전 통합본)
+# "재난에서 살아남기" 스트림릿 앱 (완전 통합 + 흰색 선택지)
+
 import streamlit as st
 
 # ----------------- 페이지 세팅 -----------------
 st.set_page_config(page_title="재난에서 살아남기", page_icon="🌍", layout="centered")
 
-# ----------------- CSS 통합 (딥그린 + 흰색 선택지) -----------------
+# ----------------- CSS 통합 (딥그린 + 흰색 선택지 + 버튼 + 결과 박스) -----------------
 st.markdown(
     """
     <style>
     /* 전체 배경 */
     .stApp { background-color: #1b4332; color: #ffffff; }
+
     /* 제목 색상 */
     h1, h2, h3, h4 { color: #d8f3dc; }
+
     /* 버튼 스타일 */
     div.stButton > button, button[kind="primary"] {
         background-color: #2d6a4f !important;
@@ -25,11 +28,21 @@ st.markdown(
         background-color: #40916c !important;
         border: 1px solid #b7e4c7 !important;
     }
-    /* 라디오/체크 선택지 글씨 흰색 */
-    div.stRadio label, div.stRadio div[data-baseweb="radio"] label,
-    div.stCheckbox label, div.stCheckbox div[data-baseweb="checkbox"] label {
+
+    /* 라디오/체크 선택지 글씨 흰색 + 호버 대비 */
+    div.stRadio div[data-baseweb="radio"] label,
+    div.stRadio label,
+    div.stCheckbox div[data-baseweb="checkbox"] label,
+    div.stCheckbox label {
         color: #ffffff !important;
+        background-color: rgba(0,0,0,0.0) !important;
     }
+    div.stRadio div[data-baseweb="radio"] label:hover,
+    div.stCheckbox div[data-baseweb="checkbox"] label:hover {
+        color: #ffffff !important;
+        background-color: rgba(255,255,255,0.05) !important;
+    }
+
     /* 결과 카드 */
     .result-box {
         background-color: #2d6a4f;
@@ -38,6 +51,7 @@ st.markdown(
         margin-top: 16px;
         box-shadow: 0 0 10px rgba(0,0,0,0.35);
     }
+
     /* 구분선 색 */
     hr { border: none; height: 1px; background: #95d5b2; opacity: 0.4; }
     </style>
