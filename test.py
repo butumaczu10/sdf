@@ -29,7 +29,7 @@ st.markdown(
     }
     .result-box {
         background-color: #2d6a4f;
-  함께 보면 좋을 영상: https://youtu.be/bWCZ3UeqDOw?si=7-5mOYfzu8HvJRJo'},
+  
     {"situation":"🌏 지진 발생",
      "question":"강한 지진이 발생했다! 당신의 행동은?",
      "options":{"4":"책상이나 탁자 아래에 들어가 머리를 보호한다",
