@@ -9,6 +9,7 @@ import streamlit as st
 st.set_page_config(page_title="재난에서 살아남기", page_icon="🌍", layout="centered")
 
 # ----------------- CSS 통합 -----------------
+# ----------------- CSS 통합 -----------------
 st.markdown(
     """
     <style>
@@ -29,6 +30,18 @@ st.markdown(
     }
     .result-box {
         background-color: #2d6a4f;
+        padding: 20px;
+        border-radius: 16px;
+        margin-top: 16px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.35);
+    }
+    hr { border: none; height: 1px; background: #95d5b2; opacity: 0.4; }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+# ----------------- 질문 데이터 -----------------
+questions = [
   
     {"situation":"🌏 지진 발생",
      "question":"강한 지진이 발생했다! 당신의 행동은?",
