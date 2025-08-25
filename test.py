@@ -5,6 +5,18 @@
 
 import streamlit as st
 
+# ----------------- 세션 상태 초기화 -----------------
+if "step" not in st.session_state:
+    st.session_state.step = 0
+if "scores" not in st.session_state:
+    st.session_state.scores = {str(k): 0 for k in range(1, 9)}
+if "answers" not in st.session_state:
+    st.session_state.answers = {}
+if "clicked_option" not in st.session_state:
+    st.session_state.clicked_option = None
+if "show_all_types" not in st.session_state:
+    st.session_state.show_all_types = False
+
 # ----------------- 페이지 세팅 -----------------
 st.set_page_config(page_title="재난에서 살아남기", page_icon="🌍", layout="centered")
 
